@@ -13,5 +13,8 @@ export const envConfig = {
       password: process.env.DB_PASSWORD,
       name: process.env.DB_NAME,
     },
+    accessExpTime: process.env.ACCESS_EXP,
+    refreshExpTime: process.env.REFRESH_EXP,
+    secretKey: process.env.JWT_SECRET,
   },
 };
