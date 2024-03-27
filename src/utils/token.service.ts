@@ -1,7 +1,8 @@
 import { envConfig } from 'src/config/env.config';
 import { logger } from 'src/utils/service-logger';
-import { sign } from 'jsonwebtoken';
+import { sign, verify } from 'jsonwebtoken';
 import { ITokenPayload } from 'src/common/interface/token.payload.interface';
+import { errorMessages } from 'src/common/error.messages';
 
 export function creatToken(payload: ITokenPayload, onlyAccess?: boolean) {
   try {
@@ -20,4 +21,16 @@ export function creatToken(payload: ITokenPayload, onlyAccess?: boolean) {
   } catch (error) {
     logger.error('Error in CreateToken', error);
   }
+}
+
+export function verifyToken(token: string): Promise<any> {
+  const secretKey = envConfig.app.secretKey;
+  return new Promise((resolve) => {
+    verify(token, secretKey, (error, verifiedJwt) => {
+      if (error) {
+        return resolve({ error: errorMessages.SESSION_EXPIRED, data: null });
+      }
+      return resolve({ error: null, data: verifiedJwt });
+    });
+  });
 }
