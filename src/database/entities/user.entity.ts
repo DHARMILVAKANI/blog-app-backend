@@ -2,6 +2,7 @@ import { Column, Entity, OneToOne, OneToMany } from 'typeorm';
 import { BaseEntity } from './base.entity';
 import { UserPassword } from 'src/database/entities/user.password.entity';
 import { LoginHistory } from 'src/database/entities/login.history.entity';
+import { Posts } from 'src/database/entities/posts.entity';
 
 @Entity('User')
 export class User extends BaseEntity {
@@ -25,4 +26,7 @@ export class User extends BaseEntity {
 
   @OneToMany(() => LoginHistory, (ulh) => ulh.user)
   loginHistory: LoginHistory;
+
+  @OneToMany(() => Posts, (post) => post.user)
+  posts: Posts[];
 }
