@@ -6,6 +6,7 @@ import {
   Version,
   Patch,
   Param,
+  Delete,
 } from '@nestjs/common';
 import { PostsService } from './posts.service';
 import {
@@ -90,5 +91,26 @@ export class PostsController {
     @Body() data: UpdatePostReqDto,
   ) {
     return this.postsService.updateUserPost(currentUser.userId, postId, data);
+  }
+
+  @ApiOperation({
+    summary: 'Delete post',
+    description: 'This api can be used to delete a post',
+  })
+  @ApiOkResponse({
+    schema: {
+      example: {
+        message: 'Post Deleted Successfully',
+      },
+    },
+  })
+  @ApiBearerAuth('Authorization')
+  @Version('1')
+  @Delete('/user/:postId')
+  async deletePost(
+    @Param('postId') postId: string,
+    @CurrentUser() currentUser: ICurrentUser,
+  ) {
+    return this.postsService.deletePost(currentUser.userId, postId);
   }
 }

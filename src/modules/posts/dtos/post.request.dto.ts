@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { Categories } from 'src/common/constant';
 
 export class CreatePostReqDto {
   @ApiProperty()
@@ -16,4 +17,14 @@ export class CreatePostReqDto {
   @IsOptional()
   @IsString()
   isPublished: boolean;
+
+  @ApiProperty({ enum: Categories })
+  @IsNotEmpty()
+  @IsEnum(Categories)
+  category: Categories;
+
+  @ApiProperty()
+  @IsNotEmpty()
+  @IsString()
+  tag: string;
 }

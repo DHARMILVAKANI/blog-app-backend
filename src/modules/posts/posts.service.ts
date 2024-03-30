@@ -6,7 +6,9 @@ import {
 } from '@nestjs/common';
 import { errorMessages } from 'src/common/error.messages';
 import { connection } from 'src/database/database.module';
+import { Category } from 'src/database/entities/category.entity';
 import { Posts } from 'src/database/entities/posts.entity';
+import { Tag } from 'src/database/entities/tag.entity';
 import { User } from 'src/database/entities/user.entity';
 import { CreatePostReqDto } from 'src/modules/posts/dtos/post.request.dto';
 import {
@@ -14,18 +16,20 @@ import {
   USerPostsResDto,
 } from 'src/modules/posts/dtos/posts.response.dto';
 import { UpdatePostReqDto } from 'src/modules/posts/dtos/update.post.req.dto';
+import { logger } from 'src/utils/service-logger';
 import { Repository } from 'typeorm';
 
 @Injectable()
 export class PostsService {
   userRepo: Repository<User>;
   postRepo: Repository<Posts>;
+  categoryRepo: Repository<Category>;
   constructor() {
     this.userRepo = connection.getRepository(User);
     this.postRepo = connection.getRepository(Posts);
   }
   public async createPost(data: CreatePostReqDto, userId: string) {
-    const { title, content, isPublished } = data;
+    const { title, content, isPublished, category, tag } = data;
     const user = await this.userRepo.findOne({
       where: { id: userId },
     });
@@ -33,12 +37,28 @@ export class PostsService {
     try {
       querryRunner.connect();
       querryRunner.startTransaction();
-      await querryRunner.manager.getRepository(Posts).save({
+      const post = await querryRunner.manager.getRepository(Posts).save({
         title,
         content,
         user: user,
         isPublished,
       });
+      const isCategoryExists = await querryRunner.manager
+        .getRepository(Category)
+        .findOne({ where: { name: category } });
+      if (!isCategoryExists)
+        throw new BadRequestException(
+          'Please enter category from provided values',
+        );
+      await querryRunner.query(
+        `insert into public.post_categories("categoryId","postsId") values (${isCategoryExists.id}, ${post.id})`,
+      );
+      const createdTag = await querryRunner.manager
+        .getRepository(Tag)
+        .save({ name: tag });
+      await querryRunner.query(
+        `insert into public.post_tags("tagId","postsId") values (${createdTag.id}, ${post.id})`,
+      );
       querryRunner.commitTransaction();
       return {
         message: 'Post Created Successfully',
@@ -122,5 +142,23 @@ export class PostsService {
     return {
       data: new USerPostsResDto(post),
     };
+  }
+
+  public async deletePost(userId: string, postId: string) {
+    const post = await this.postRepo.findOne({
+      where: { id: postId, user: { id: userId } },
+    });
+    if (!post) throw new NotFoundException(errorMessages.notFound('Post'));
+    try {
+      await this.postRepo.softDelete({ id: postId, user: { id: userId } });
+      return {
+        message: 'Post Deleted Successfully',
+      };
+    } catch (error) {
+      logger.error('Error in delete post api', error);
+      throw new InternalServerErrorException(
+        errorMessages.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 }
