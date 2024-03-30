@@ -4,4 +4,5 @@ export const errorMessages = {
   EMAIL_ALREADY_REGISTERED: 'Email is already registered',
   INVALID_TOKEN: 'Invalid Token!',
   invalidData: (message: string) => `Please enter valid ${message}`,
+  notFound: (message: string) => `${message} not found`,
 };
