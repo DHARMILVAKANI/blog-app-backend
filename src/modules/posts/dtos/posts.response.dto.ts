@@ -1,7 +1,21 @@
-import { ApiProperty, OmitType } from '@nestjs/swagger';
+import { ApiProperty } from '@nestjs/swagger';
+import { Categories } from 'src/common/constant';
+import { Category } from 'src/database/entities/category.entity';
 import { Posts } from 'src/database/entities/posts.entity';
 import { UserResponseDto } from 'src/modules/auth/dtos/user.response.dto';
 
+class CategoryDto {
+  @ApiProperty()
+  id: string;
+
+  @ApiProperty({ enum: Categories })
+  name: string;
+
+  constructor(data: Category) {
+    this.id = data.id;
+    this.name = data.name;
+  }
+}
 export class PostsResDto {
   @ApiProperty()
   id: string;
@@ -19,6 +33,9 @@ export class PostsResDto {
   createdAt: Date;
 
   @ApiProperty()
+  category: CategoryDto[];
+
+  @ApiProperty()
   author: UserResponseDto;
 
   constructor(data: Posts) {
@@ -27,6 +44,7 @@ export class PostsResDto {
     this.content = data.content;
     this.isPublished = data.isPublished;
     this.createdAt = data.createdAt;
+    this.category = data?.category?.map((val) => new CategoryDto(val));
     this.author = data.user;
   }
 }

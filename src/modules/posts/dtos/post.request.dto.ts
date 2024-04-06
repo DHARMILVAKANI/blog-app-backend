@@ -1,5 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import {
+  IsArray,
+  IsEnum,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 import { Categories } from 'src/common/constant';
 
 export class CreatePostReqDto {
@@ -21,6 +27,7 @@ export class CreatePostReqDto {
   @ApiProperty({ enum: Categories })
   @IsNotEmpty()
   @IsEnum(Categories)
+  @IsArray()
   category: Categories;
 
   @ApiProperty()

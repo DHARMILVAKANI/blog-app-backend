@@ -7,6 +7,7 @@ import {
   Patch,
   Param,
   Delete,
+  Query,
 } from '@nestjs/common';
 import { PostsService } from './posts.service';
 import {
@@ -23,6 +24,7 @@ import {
   USerPostsResDto,
 } from 'src/modules/posts/dtos/posts.response.dto';
 import { UpdatePostReqDto } from 'src/modules/posts/dtos/update.post.req.dto';
+import { PostQueryReqDto } from 'src/modules/posts/dtos/query.req.dto';
 
 @ApiTags('Posts')
 @Controller('posts')
@@ -60,8 +62,8 @@ export class PostsController {
   @ApiBearerAuth('Authorization')
   @Version('1')
   @Get()
-  async getAllPosts() {
-    return this.postsService.getAllPosts();
+  async getAllPosts(@Query() query?: PostQueryReqDto) {
+    return this.postsService.getAllPosts(query);
   }
 
   @ApiOperation({

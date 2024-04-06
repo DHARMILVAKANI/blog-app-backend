@@ -15,6 +15,7 @@ import {
   PostsResDto,
   USerPostsResDto,
 } from 'src/modules/posts/dtos/posts.response.dto';
+import { PostQueryReqDto } from 'src/modules/posts/dtos/query.req.dto';
 import { UpdatePostReqDto } from 'src/modules/posts/dtos/update.post.req.dto';
 import { logger } from 'src/utils/service-logger';
 import { Repository } from 'typeorm';
@@ -71,21 +72,18 @@ export class PostsService {
     }
   }
 
-  public async getAllPosts() {
-    const posts = await this.postRepo.find({
-      where: {
-        isPublished: true,
-      },
-      relations: ['user'],
-      select: {
-        user: {
-          id: true,
-          firstName: true,
-          lastName: true,
-          profilePicture: true,
-        },
-      },
-    });
+  public async getAllPosts(query?: PostQueryReqDto) {
+    const { category } = query;
+    const querryBuilder = this.postRepo
+      .createQueryBuilder('p')
+      .leftJoinAndSelect('p.user', 'pUser')
+      .leftJoinAndSelect('p.category', 'pCat')
+      .andWhere('p.isPublished = true');
+
+    if (category) {
+      querryBuilder.andWhere('pCat.name = :category', { category });
+    }
+    const [posts] = await querryBuilder.getManyAndCount();
     if (!posts.length)
       throw new NotFoundException(errorMessages.notFound('Posts'));
 
@@ -97,7 +95,7 @@ export class PostsService {
   public async getPostByUserId(userId: string) {
     const user = await this.userRepo.findOne({
       where: { id: userId },
-      relations: ['posts'],
+      relations: ['posts.category'],
     });
     if (!user) throw new NotFoundException(errorMessages.notFound('User'));
     const userPosts = user.posts.reduce((accumulator, post) => {

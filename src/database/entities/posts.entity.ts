@@ -18,7 +18,7 @@ export class Posts extends BaseEntity {
   @Column({ type: 'boolean', default: false })
   isPublished: boolean;
 
-  @ManyToMany(() => Category)
+  @ManyToMany(() => Category, (cat) => cat.posts)
   category: Category[];
 
   @ManyToMany(() => Category)

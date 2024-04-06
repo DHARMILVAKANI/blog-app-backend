@@ -7,7 +7,7 @@ export class Category extends BaseEntity {
   @Column({ type: 'varchar' })
   name: string;
 
-  @ManyToMany(() => Posts)
+  @ManyToMany(() => Posts, (post) => post.category)
   @JoinTable({ name: 'post_categories' })
   posts: Posts[];
 }
